@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jukebox Bar</title>
+  <style>
+    body { font-family: Arial; background:#111; color:white; text-align:center; }
+    input { width:80%; padding:10px; font-size:18px; }
+    .result { border:1px solid #333; margin:10px; padding:10px; cursor:pointer; }
+    .result:hover { background:#222; }
+  </style>
+</head>
+
+<body>
+
+<h1>🎵 Pide tu canción</h1>
+
+<input type="text" id="search" placeholder="Busca canción o artista">
+
+<div id="results"></div>
+
+<script>
+const API_KEY = "AIzaSyCEbmK2RRcC2oWV1BXe6WAY4yFmqUiNTE0";
+
+document.getElementById("search").addEventListener("keyup", async function(e){
+    let query = e.target.value;
+
+    if(query.length < 3) return;
+
+    let res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&key=${API_KEY}`);
+    let data = await res.json();
+
+    let container = document.getElementById("results");
+    container.innerHTML = "";
+
+    data.items.forEach(item => {
+        let div = document.createElement("div");
+        div.className = "result";
+        div.innerHTML = `
+            <p>${item.snippet.title}</p>
+            <small>${item.snippet.channelTitle}</small>
+        `;
+
+        div.onclick = () => seleccionar(item);
+        container.appendChild(div);
+    });
+});
+
+async function seleccionar(item){
+    alert("Agregada: " + item.snippet.title);
+
+    await fetch("https://script.google.com/macros/s/AKfycby3mwxuZMzL1YGcoDYVKLjXmHbBBse0H1ffjQeVN2bvy72eHd1D7xi4Ae_2kLbicUtD/exec", {
+        method: "POST",
+        body: JSON.stringify({
+            titulo: item.snippet.title,
+            canal: item.snippet.channelTitle,
+            videoId: item.id.videoId
+        })
+    });
+}
+</script>
+
+</body>
+</html>
